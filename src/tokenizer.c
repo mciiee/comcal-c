@@ -1,8 +1,10 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "tokenizer.h"
 #include "list.h"
+#include "token.h"
 
 #ifndef TOKENLIST_DEFAULT_CAPACITY 
 #define TOKENLIST_DEFAULT_CAPACITY 256
@@ -11,71 +13,6 @@
 #ifndef VAR_STRING_DEFAULT_LENGTH 
 #define VAR_STRING_DEFAULT_LENGTH 4
 #endif
-
-const char *TokenType_to_str(enum TokenType type) {
-  switch (type) {
-    case TOKENTYPE_UNKNOWN:
-      return "TOKENTYPE_UNKNOWN";
-    case TOKENTYPE_VAR:
-      return "TOKENTYPE_VAR";
-    case TOKENTYPE_COMBINATOR:
-      return "TOKENTYPE_COMBINATOR";
-    case TOKENTYPE_NEWLINE:
-      return "TOKENTYPE_NEWLINE";
-    case TOKENTYPE_WHITESPACE:
-      return "TOKENTYPE_WHITESPACE";
-    case TOKENTYPE_PAREN_OPEN:
-      return "TOKENTYPE_PAREN_OPEN";
-    case TOKENTYPE_PAREN_CLOSE:
-      return "TOKENTYPE_PAREN_CLOSE";
-    case TOKENTYPE_EOF:
-      return "TOKENTYPE_EOF";
-    }
-  return nullptr;
-}
-
-const char *TokenFlags_to_str(enum TokenFlags flags) {
-  switch (flags) {
-    case TOKENFLAGS_NONE:
-      return "None";
-    case TOKENFLAGS_DYNAMICALLY_ALLOCATED:
-      return "DA";
-    case TOKENFLAGS_REPR_DYNAMICALLY_ALLOCATED:
-      return "R:DA";
-  }
-
-  return nullptr;
-}
-
-char *Token_repr_str(enum TokenType type, union TokenRepr repr) {
-  switch (type) {
-    case TOKENTYPE_UNKNOWN:
-      [[fallthrough]];
-    case TOKENTYPE_VAR:
-      return repr.str;
-    case TOKENTYPE_COMBINATOR:
-      switch (repr.combinator) {
-        case COMBINATOR_I:
-          return "I";
-        case COMBINATOR_S:
-          return "S";
-        case COMBINATOR_K:
-          return "K";
-      }
-    case TOKENTYPE_WHITESPACE:
-      return " ";
-    case TOKENTYPE_NEWLINE:
-      return "\\n";
-    case TOKENTYPE_PAREN_OPEN:
-      return "(";
-    case TOKENTYPE_PAREN_CLOSE:
-      return ")";
-    case TOKENTYPE_EOF:
-      return "EOF";
-    }
-
-  return nullptr;
-}
 
 constexpr Token TOKEN_EOF = {
   .flags = 0,
@@ -123,15 +60,7 @@ constexpr Token TOKEN_PAREN_CLOSE = {
   .type = TOKENTYPE_PAREN_CLOSE,
 };
 
-void Token_print(const Token *token) {
-  printf("[Token] flags: %s, type: %s, repr: \"%s\"\n", TokenFlags_to_str(token->flags), TokenType_to_str(token->type), Token_repr_str(token->type, token->repr));
-}
 
-void TokenList_print(const TokenList *list) {
-  for (size_t i = 0; i < list->occupied; i++) {
-    Token_print(&list->tokens[i]);
-  }
-}
 
 static char *handleVar(FILE *stream) {
   char *str = calloc(VAR_STRING_DEFAULT_LENGTH+1, sizeof(char));
@@ -221,7 +150,6 @@ TokenList *tokenize(FILE *stream) {
 
   return list;
 }
-
 
 int main(int argc, char **argv) {
   (void)argc;
